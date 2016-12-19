@@ -1,0 +1,132 @@
+.table {
+    width: 100%;
+    max-width: 100%;
+    font-size: 14px;
+    color: #1f2d3d;
+    background-color: #fff;
+    border: 1px solid #e0e6ed;
+}
+.table__row {
+    transition: background-color .25s ease;
+}
+.table__row:hover{
+    background-color: #eff2f7;
+}
+.table__row:first-child{
+    background-color: #eff2f7;
+}
+.table__cell {
+    height: 40px;
+    padding: 0 18px;
+    font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    word-break: break-all;
+    text-overflow: ellipsis;
+    border-right: 1px solid #e0e6ed;
+    border-bottom: 1px solid #e0e6ed;
+    transition: background-color .25s ease;
+}
+.table__cell:last-child{
+    border-right: 0;
+}
+.table__row:first-child .table__cell {
+    color: #1f2d3d;
+    font-weight: bold;
+}
+.table__checkbox {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    vertical-align: middle;
+    background-color: #fff;
+    border: 1px solid #c0ccda;
+}
+.table__checkbox:hover {
+    border-color: #20a0ff;
+}
+.table__checkbox-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.table__checkbox-input {
+    visibility: hidden;
+}
+.table__checkbox-checked {
+    display: none;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border-color: #20a0ff;
+    background-color: #20a0ff;
+}
+.table__checkbox-checked:after {
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    width: 4px;
+    height: 8px;
+    content: '';
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(45deg);
+}
+.table__checkbox-input:checked + .table__checkbox-checked {
+    display: block;
+}
+.table__sortable {
+    position: relative;
+    display: inline-block;
+    width: 10px;
+    height: 34px;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+.table__arrow {
+    position: absolute;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border: 0;
+    left: 0px;
+    content: '';
+    font-size: 0;
+    line-height: 0;
+    border: 5px solid #99a9bf;
+}
+.table__top-arrow {
+    top: 5px;
+    cursor: pointer;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    border-right-color: transparent;
+}
+.table__bottom-arrow {
+    bottom: 7px;
+    cursor: pointer;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+}
+.table__top-arrow--active {
+    border-bottom-color: #475669;
+}
+.table__bottom-arrow--active {
+    border-top-color: #475669;
+}
+.table__slots--hidden {
+    display: none;
+}
