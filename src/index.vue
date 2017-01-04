@@ -1,4 +1,4 @@
-<style src=./style.css scoped></style>
+<style src=./style.css></style>
 
 <script>
     import Vue from 'vue'
@@ -7,6 +7,7 @@
     Vue.component('Column', Column)
 
     export default {
+        name: 'Tables',
         props: {
             index: Boolean,
             selection: Boolean,
@@ -17,59 +18,34 @@
         },
         data() {
             return {
-                columns: [],
-                scopedId: []
+                columns: []
             }
         },
         render(h) {
-            let children = [
-                createTrElement(h, arr2obj(this.scopedId), [
-                    isShowCheckbox.call(this, h, 'all', 0, this.selectionAll),
-                    isShowIndex.call(this, h, '#'),
-                    this.columns.map((item, index) => {
-                        return createTdElement(h, arr2obj(this.scopedId), [
-                            item.$options.propsData.title,
-                            isShowSortable.call(this, h, index, arr2obj(this.scopedId), item)
-                        ])
-                    })
-                ]),
-                ...this.data.map((data, $index) => {
-                    return createTrElement(h, arr2obj(this.scopedId), [
-                        isShowCheckbox.call(this, h, 'self', $index, this.selectionOne),
-                        isShowIndex.call(this, h, $index + 1),
-                        this.columns.map((column) => {
-                            return createTdElement(h, arr2obj(this.scopedId), column.render.call(this._renderProxy, h, {
-                                data,
-                                $index,
-                                _self: this.$vnode.context
-                            }))
-                        })
-                    ])
-                }),
-                h('div', { class: 'table__slots--hidden', ref: 'slots' }, this.$slots.default),
-                this.index ? h('col', { attrs: { width: 50 }}) : '',
-                this.selection ? h('col', { attrs: { width: 50 }}) : '',
-                ...this.columns.map((item) => {
-                    return item.width ? h('col', { attrs: { width: item.width }}) : h('col') 
-                })
-            ]
-
-            return createTableElement(h, children)
+            return (
+                <table class="ui-table" border="0" cellspacing="0" cellpadding="0">
+                    {header(h, this.selection, this.index, this.columns, this.selectionAll, this.$refs)}
+                    {body(h, this.selection, this.index, this.data, this.columns, this._renderProxy, this.$vnode.context, this.selectionOne)}
+                    <div class="ui-table__slots--hidden" ref="slots">{this.$slots.default}</div>
+                    <col width="50" v-show={this.index}></col>
+                    <col width="50" v-show={this.selection}></col>
+                    {this.columns.map((item) => <col width={item.width}></col>)}
+                </table>
+            )
         },
         methods: {
-            selectionAll() {
-                Object
-                    .keys(this.$refs)
-                    .filter((ref) => ref.indexOf('self') !== -1)
-                    .map((ref) => this.$refs[ref].checked = event.target.checked)
+            selectionAll(e) {
+                Object.keys(this.$refs)
+                    .filter((ref) => ref.includes('self'))
+                    .map((ref) => this.$refs[ref].checked = e.target.checked)
 
-                this.selection && this.$emit('selection-change', event.target.checked ? this.data : [])
+                this.selection && this.$emit('selection-change', e.target.checked ? this.data : [])
             },
             selectionOne() {
                 let refs, result
 
                 result = []
-                refs = Object.keys(this.$refs).filter((ref) => ref.indexOf('self') !== -1)
+                refs = Object.keys(this.$refs).filter((ref) => ref.includes('self'))
 
                 for(let ref of refs) {
                     if(this.$refs[ref].checked) {
@@ -78,129 +54,63 @@
                 }
 
                 this.$refs.all0.checked = refs.length === result.length
-
                 this.selection && this.$emit('selection-change', result)
             }
-        },
-        mounted() {
-            this.scopedId = getScopedId(this.$el)
         }
     }
 
-    function getScopedId(element) {
-        return Object.keys(element.dataset).filter((key) => key.indexOf('v-') !== -1)
+    function header(h, selection, index, columns, selectionAll, refs) {
+        return (
+            <tr class="ui-table__row">
+                <td class="ui-table__cell" v-show={selection}>{checkBox(h, 'all0', selectionAll)}</td>
+                <td class="ui-table__cell" v-show={index}>#</td>
+                {columns.map((item, index) => <td class="ui-table__cell">{item.$options.propsData.title}{sortable(h, item, index, refs)}</td>)}
+            </tr>
+        )
     }
 
-    function isShowSortable(h, index, scopedId, column) {
-        let bool, ctx
-
-        ctx = this
-        bool = column.$options.propsData.sortable
-        
-        if(typeof bool === 'string' || typeof bool === 'boolean') {
-            return h('div', {
-                attrs: scopedId,
-                class: 'table__sortable'
-            }, [
-                h('div', {
-                    attrs: scopedId,
-                    ref: `topArrow${index}`,
-                    class: ['table__arrow', 'table__top-arrow'],
-                    on: {
-                        click() {
-                            ctx.$refs[`topArrow${index}`].classList.add('table__top-arrow--active')
-                            ctx.$refs[`bottomArrow${index}`].classList.remove('table__bottom-arrow--active')
-                            column.$emit('sort-change', 'top', column.$options.propsData.field)
-                        }
-                    }
-                }),
-                h('div', {
-                    attrs: scopedId,
-                    ref: `bottomArrow${index}`,
-                    class: ['table__arrow', 'table__bottom-arrow'],
-                    on: {
-                        click() {
-                            ctx.$refs[`topArrow${index}`].classList.remove('table__top-arrow--active')
-                            ctx.$refs[`bottomArrow${index}`].classList.add('table__bottom-arrow--active')
-                            column.$emit('sort-change', 'down', column.$options.propsData.field)
-                        }
-                    }
-                })
-            ])
-        }else {
-            return ''
-        }
-    }
-
-    function isShowCheckbox(h, type, index, callback) {
-        if(this.selection) {
-            return createTdElement(h, arr2obj(this.scopedId), createCheckboxElement(h, type, index, arr2obj(this.scopedId), callback))
-        }else {
-            return ''
-        }
-    }
-
-    function isShowIndex(h, text) {
-        return this.index ? createTdElement(h, arr2obj(this.scopedId), text) : ''
-    }
-
-    function createTableElement(h, children) {
-        return h('table', {
-            attrs: {
-                bordder: 0,
-                cellspacing: 0,
-                cellpadding: 0
-            },
-            class: 'table'
-        }, children)
-    }
-
-    function createTrElement(h, scopedId, children) {
-        return h('tr', {
-            attrs: scopedId,
-            class: 'table__row'
-        }, children)
-    }
-
-    function createTdElement(h, scopedId, children) {
-        if(!Array.isArray(children)) {
-            children = [children]
-        }
-
-        return h('td', {
-            attrs: scopedId,
-            class: 'table__cell'
-        }, children)
-    }
-
-    function createCheckboxElement(h, type, index, scopedId, callback) {
-        return h('div', {
-            attrs: { ...scopedId },
-            class: 'table__checkbox'
-        }, [
-            h('label', {
-                attrs: { ...scopedId },
-                class: 'table__checkbox-label'
-            }, [
-                h('input', {
-                    ref: `${type}${index}`,
-                    on: { change: callback },
-                    class: 'table__checkbox-input',
-                    attrs: { ...scopedId, type: 'checkbox' }
-                }),
-                h('div', {
-                    attrs: { ...scopedId },
-                    class: 'table__checkbox-checked'
-                })
-            ])
-        ]) 
-    }
-
-    function arr2obj(arr, obj = {}) {
-        arr.map((item) => {
-            obj[`data-${item}`] = ''
+    function body(h, selection, index, datas, columns, _renderProxy, context, selectionHandler) {
+        return datas.map((data, idx) => {
+            return (
+                <tr class="ui-table__row">
+                    <td class="ui-table__cell" v-show={selection}>{checkBox(h, `self${idx}`, selectionHandler)}</td>
+                    <td class="ui-table__cell" v-show={index}>{idx + 1}</td>
+                    {columns.map((item) => column(h, item, _renderProxy, data, idx, context))}
+                </tr>
+            )
         })
+    }
 
-        return obj
+    function column(h, item, _renderProxy, data, $index, _self) {
+        return <td class="ui-table__cell">{item.render.call(_renderProxy, h, {data, $index, _self})}</td>
+    }
+
+    function checkBox(h, ref, handler) {
+        return (
+            <div class="ui-table__checkbox">
+                <label class="ui-table__checkbox-label">
+                    <input type="checkbox" class="ui-table__checkbox-input" ref={ref} onChange={handler}/>
+                    <div class="ui-table__checkbox-checked"></div>
+                </label>
+            </div>
+        )
+    }
+
+    function sortable(h, column, index, refs) {
+        function handler(index, direction) {
+            column.$emit('sort-change', direction, column.$options.propsData.field)
+            refs[`topArrow${index}`].classList[direction === 'top' ? 'add' : 'remove']('ui-table__top-arrow--active')
+            refs[`bottomArrow${index}`].classList[direction === 'top' ? 'remove' : 'add']('ui-table__bottom-arrow--active')
+        }
+
+        if(['string', 'boolean'].includes(typeof column.$options.propsData.sortable)) {
+            return (
+                <div class="ui-table__sortable">
+                    <div class="ui-table__arrow ui-table__top-arrow" ref={`topArrow${index}`} onClick={handler.bind(null, index, 'top')}></div>
+                    <div class="ui-table__arrow ui-table__bottom-arrow" ref={`bottomArrow${index}`} onClick={handler.bind(null, index, 'bottom')}>
+                    </div>
+                </div>
+            )
+        }
     }
 </script>

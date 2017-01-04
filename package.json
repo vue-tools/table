@@ -1,26 +1,30 @@
 {
-  "name": "table",
-  "version": "0.1.0",
+  "name": "vt-table",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vue-tools/table"
+    "url": "https://github.com/vue-tools/vt-table"
   },
   "main": "dist/index.vue",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/vue-tools/table/issues"
+    "url": "https://github.com/vue-tools/vt-table/issues"
   },
   "babel": {
     "presets": [
       "es2015"
     ],
     "plugins": [
+      "transform-vue-jsx",
       "transform-runtime"
     ]
   },
-  "homepage": "https://github.com/vue-tools/table#readme",
+  "homepage": "https://github.com/vue-tools/vt-table#readme",
   "devDependencies": {
     "babel-cli": "^6.18.0",
+    "babel-plugin-syntax-jsx": "^6.18.0",
+    "babel-helper-vue-jsx-merge-props": "^2.0.2",
+    "babel-plugin-transform-vue-jsx": "^3.3.0",
     "babel-core": "^6.20.0",
     "babel-loader": "^6.2.9",
     "babel-plugin-transform-runtime": "^6.15.0",
@@ -30,7 +34,7 @@
   },
   "scripts": {
     "prepublish": "npm run compile",
-    "copy": "cp -rf src dist",
+    "copy": "rm -fr dist && cp -rf src dist",
     "compile": "npm run copy && node_modules/.bin/babel dist -d dist"
   }
 }
