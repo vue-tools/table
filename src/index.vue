@@ -1,11 +1,6 @@
 <style src=./style.css></style>
 
 <script>
-    import Vue from 'vue'
-    import Column from './column'
-    
-    Vue.component('Column', Column)
-
     export default {
         name: 'Tables',
         props: {
