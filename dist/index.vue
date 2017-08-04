@@ -1,4 +1,4 @@
-<style src=./style.css></style>
+<style src="./style.css"></style>
 
 <script>
     export default {
@@ -19,7 +19,7 @@
         render(h) {
             return (
                 <table class="ui-table" border="0" cellspacing="0" cellpadding="0">
-                    {header(h, this.selection, this.index, this.columns, this.selectionAll, this.$refs)}
+                    {header(h, this.selection, this.index, this.data, this.columns, this.selectionAll, this.$refs)}
                     {body(h, this.selection, this.index, this.data, this.columns, this._renderProxy, this.$vnode.context, this.selectionOne)}
                     <div class="ui-table__slots--hidden" ref="slots">{this.$slots.default}</div>
                     <col width="50" v-show={this.index}></col>
@@ -32,15 +32,19 @@
             selectionAll(e) {
                 Object.keys(this.$refs)
                     .filter((ref) => ref.includes('self'))
-                    .map((ref) => this.$refs[ref].checked = e.target.checked)
-
-                this.selection && this.$emit('selection-change', e.target.checked ? this.data : [])
+                    .map((ref) => {
+                        if (!this.$refs[ref].disabled) {
+                            this.$refs[ref].checked = e.target.checked
+                        }
+                    })
+                
+                this.selection && this.$emit('selection-change', e.target.checked ? this.data.filter((item) => !item.disabled) : [])
             },
             selectionOne() {
                 let refs, result
 
                 result = []
-                refs = Object.keys(this.$refs).filter((ref) => ref.includes('self'))
+                refs = Object.keys(this.$refs).filter((ref) => ref.includes('self') && !this.$refs[ref].disabled)
 
                 for(let ref of refs) {
                     if(this.$refs[ref].checked) {
@@ -54,10 +58,14 @@
         }
     }
 
-    function header(h, selection, index, columns, selectionAll, refs) {
+    function header(h, selection, index, datas, columns, selectionAll, refs) {
+        let options = {
+            disabled: datas.filter((item) => item.disabled).length === datas.length
+        }
+        
         return (
             <tr class="ui-table__row">
-                <td class="ui-table__cell" v-show={selection}>{checkBox(h, 'all0', selectionAll)}</td>
+                <td class="ui-table__cell" v-show={selection}>{checkBox(h, 'all0', options, selectionAll)}</td>
                 <td class="ui-table__cell" v-show={index}>#</td>
                 {columns.map((item, index) => <td class="ui-table__cell">{item.$options.propsData.title}{sortable(h, item, index, refs)}</td>)}
             </tr>
@@ -68,7 +76,7 @@
         return datas.map((data, idx) => {
             return (
                 <tr class="ui-table__row">
-                    <td class="ui-table__cell" v-show={selection}>{checkBox(h, `self${idx}`, selectionHandler)}</td>
+                    <td class="ui-table__cell" v-show={selection}>{checkBox(h, `self${idx}`, data, selectionHandler)}</td>
                     <td class="ui-table__cell" v-show={index}>{idx + 1}</td>
                     {columns.map((item) => column(h, item, _renderProxy, data, idx, context))}
                 </tr>
@@ -80,11 +88,11 @@
         return <td class="ui-table__cell">{item.render.call(_renderProxy, h, {data, $index, _self})}</td>
     }
 
-    function checkBox(h, ref, handler) {
+    function checkBox(h, ref, data, handler) {
         return (
-            <div class="ui-table__checkbox">
+            <div class={{ 'ui-table__checkbox--disabled': data.disabled, 'ui-table__checkbox': true }}>
                 <label class="ui-table__checkbox-label">
-                    <input type="checkbox" class="ui-table__checkbox-input" ref={ref} onChange={handler}/>
+                    <input type="checkbox" class="ui-table__checkbox-input" ref={ref} disabled={data.disabled} onChange={handler}/>
                     <div class="ui-table__checkbox-checked"></div>
                 </label>
             </div>

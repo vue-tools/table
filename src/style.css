@@ -46,8 +46,14 @@
     background-color: #fff;
     border: 1px solid #c0ccda;
 }
+.ui-table__checkbox--disabled {
+    border: 1px solid #ccc;
+}
 .ui-table__checkbox:hover {
     border-color: #20a0ff;
+}
+.ui-table__checkbox--disabled:hover {
+    border-color: #ccc;
 }
 .ui-table__checkbox-label {
     position: absolute;
